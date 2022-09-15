@@ -5,7 +5,8 @@ locals {
 module "resources" {
   source = "./modules/resources"
   depends_on = [
-    module.database
+    module.database,
+    null_resource.install_lambda_node_modules
   ]
   db_input_endpoint = local.mydb_enpoint
 }

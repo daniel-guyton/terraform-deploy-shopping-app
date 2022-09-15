@@ -14,18 +14,55 @@ const knex = require('knex')({
     }
 })
 
+const read = () => {
+ return knex('products').select()
+}
 
+const create = (payload) => {
+  const {user_id, product_id, quantity} = payload
+  return knex('cart').insert({user_id, product_id, quantity})
+}
+
+// eslint-disable-next-line no-unused-vars
 exports.handler = async (event, content, callback) => {
-   try {
-       console.log('connection successful')
-       const body = await knex('products').select();
-       const res = {
-           statusCode: 200,
-           body: JSON.stringify(body)
-       }
-       return res
-   } catch (err) {
-       console.log(err)
-   }
+  console.log('Received event:', JSON.stringify(event, null, 2));
+  let body;
+  let payload;
+  try {
+      switch (event.httpMethod) {
+          case "GET":
+              body = await read()// GET product
+              break;
+          case "POST":
+              payload = event.body;
+              await create(payload)
+              body = `Succesfully posting ${payload}`; // POST /product
+              break;
+          default:
+              throw new Error(`Unsupported route: "${event.httpMethod}"`);
+      }
 
+      console.log(body);
+      return {
+          statusCode: 200,
+          headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+          },
+          body: JSON.stringify({
+          message: `Successfully finished operation: "${event.httpMethod}"`,
+          body: body
+          })
+      };
+
+  } catch (e) {
+      console.error(e);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: "Failed to perform operation.",
+          errorMsg: e.message
+        })
+      };
+  }
 }
