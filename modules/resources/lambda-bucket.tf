@@ -11,12 +11,13 @@ data "archive_file" "lambda_dbconnect" {
 }
 
 resource "aws_s3_object" "lambda_db_connection" {
+
   bucket = aws_s3_bucket.lambda_bucket.id
 
   key    = "lambda-fn.zip"
   source = data.archive_file.lambda_dbconnect.output_path
 
-  etag = filemd5(data.archive_file.lambda_dbconnect.output_path)
+  source_hash = filemd5(data.archive_file.lambda_dbconnect.output_path)
 }
 
 resource "aws_s3_bucket_public_access_block" "lambda_bucket" {

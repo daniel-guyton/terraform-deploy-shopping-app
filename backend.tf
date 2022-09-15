@@ -1,8 +1,8 @@
 terraform {
-  backend "remote" {
-    organization = "danielguyton"
-    workspaces {
-      name = "terraform-deploy-shopping-app"
-    }
+  backend "s3" {
+    bucket         = "shopping-app-backend"
+    key            = "terraform.tfstate"
+    region         = "ap-southeast-2"
+    dynamodb_table = "shopping-app-backend"
   }
 }
