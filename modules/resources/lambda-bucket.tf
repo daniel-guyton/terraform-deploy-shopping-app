@@ -6,7 +6,7 @@ resource "aws_s3_bucket" "lambda_bucket" {
 data "archive_file" "lambda_dbconnect" {
   type = "zip"
 
-  source_dir  = "${path.module}/lambda-fn"
+  source_dir  = "${path.module}/lambda-fn/dist"
   output_path = "${path.module}/lambda-fn.zip"
 }
 
