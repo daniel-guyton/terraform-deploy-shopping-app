@@ -49,6 +49,7 @@ resource "null_resource" "cleanup_files_after_upload" {
     rm -rf ./shopping-app-download
     rm -rf ./modules/resources/lambda-fn/node_modules
     rm -rf ./modules/resources/lambda-fn/package-lock.json
+    rm -rf ./modules/resources/lambda-fn/dist/*
     EOT
   }
 }

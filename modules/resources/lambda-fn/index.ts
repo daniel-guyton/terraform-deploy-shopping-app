@@ -1,8 +1,10 @@
 /* eslint-disable camelcase */
-const AWS = require('aws-sdk')
-AWS.config.update({ region: 'ap-southeast-2' })
+import Knex from 'knex'
+import * as AWS from 'aws-sdk'
+import {Event, PostPayload} from './common/types'
+import { Context, APIGatewayProxyCallback } from 'aws-lambda';
 
-const knex = require('knex')({
+const knex = Knex({
   client: 'mysql',
   connection: {
     ssl: {
@@ -15,20 +17,22 @@ const knex = require('knex')({
   }
 })
 
+AWS.config.update({ region: 'ap-southeast-2' })
+
 const read = () => {
   return knex('products').select()
 }
 
-const create = (payload) => {
+const create = (payload: PostPayload) => {
   const { user_id, product_id, quantity } = payload
   return knex('cart').insert({ user_id, product_id, quantity })
 }
 
 // eslint-disable-next-line no-unused-vars
-exports.handler = async (event, context, callback) => {
+export const handler = async (event: Event, context: Context, callback: APIGatewayProxyCallback) => {
   console.log('Received event:', JSON.stringify(event, null, 2))
-  let body
-  let payload
+  let body;
+  let payload;
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, PUT, GET, OPTIONS',
