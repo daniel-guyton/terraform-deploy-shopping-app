@@ -19,17 +19,39 @@ const knex = Knex({
 
 AWS.config.update({ region: 'ap-southeast-2' })
 
-const read = () => {
-  return knex('products').select()
+const getProducts = () => {
+  return knex('products')
+  .select()
 }
 
-const create = (payload: PostPayload) => {
-  const { user_id, product_id, quantity } = payload
-  return knex('cart').insert({ user_id, product_id, quantity })
+const updateOrInsertCartItem = (payload: PostPayload) => {
+  return knex('cart_item')
+  .insert(payload)
+  .onConflict('product_id')
+  .merge({qty: knex.raw('?? + 1', 'qty')})
+}
+
+const getCartIdByUserId = (user_id) => {
+  return knex('cart')
+  .join('users', 'users.id', 'cart.user_id')
+  .where('user_id', user_id)
+  .select('cart.id')
+}
+
+const getCartItemsByCartId = (cart_id) => {
+  return knex('cart_item')
+  .select('*')
+  .where('cart_id', cart_id)
+}
+
+const getProductsByProductId = (product_id) => {
+  return knex('products')
+    .select()
+    .where('id', product_id)
 }
 
 // eslint-disable-next-line no-unused-vars
-export const handler = async (event: Event, context: Context, callback: APIGatewayProxyCallback) => {
+export const handler = async (event: any, context: Context, callback: APIGatewayProxyCallback) => {
   console.log('Received event:', JSON.stringify(event, null, 2))
   let body;
   let payload;
@@ -49,23 +71,33 @@ export const handler = async (event: Event, context: Context, callback: APIGatew
     body: ''
   }
   try {
-    switch (event.httpMethod) {
-      case 'GET':
-        body = await read()// GET product
+    switch (true) {
+      case event.httpMethod == 'POST':
+        if(event.body !== null && event.body !== undefined) {
+          payload = JSON.parse(event.body)
+        }
+        await updateOrInsertCartItem({ cart_id: 1, product_id: payload.id, qty: 1 })
+        body = `Succesfully posting ${event.body}` // POST /product
         break
-      case 'POST':
-        payload = event.body
-        await create({ user_id: 1, product_id: payload.id, quantity: payload.price })
-        body = `Succesfully posting ${payload}` // POST /product
+      case event.httpMethod == 'GET' && event.path == '/getUserCart':
+        const cartId = await getCartIdByUserId(2)
+        const listOfCartItems = await getCartItemsByCartId(cartId[0].id)
+        body = await Promise.all(listOfCartItems.map(async (item) => ({
+          product: Object.assign.apply({}, await getProductsByProductId(item.product_id)),
+          qty: item.qty
+        })))
         break
-      case 'OPTIONS':
+      case event.httpMethod == 'GET':
+        body = await getProducts()// GET product
+        break
+      case event.httpMethod == 'OPTIONS':
         context.done(undefined, data)
         break
       default:
         throw new Error(`Unsupported route: "${event.httpMethod}"`)
     }
 
-    console.log(body)
+    console.log(event.body)
     return {
       statusCode: 200,
       headers,

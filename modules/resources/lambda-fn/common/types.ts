@@ -1,7 +1,7 @@
 interface PostPayload {
-  user_id: number,
+  cart_id: number,
   product_id: number,
-  quantity: number
+  qty: number
 }
 
 interface Event {
