@@ -1,57 +1,14 @@
 /* eslint-disable camelcase */
-import Knex from 'knex'
-import * as AWS from 'aws-sdk'
-import {Event, PostPayload} from './common/types'
-import { Context, APIGatewayProxyCallback } from 'aws-lambda';
 
-const knex = Knex({
-  client: 'mysql',
-  connection: {
-    ssl: {
-      rejectUnauthorized: false
-    },
-    host: process.env.DB_ENDPOINT,
-    user: 'tstdb01',
-    password: 'tstdb01234',
-    database: 'mydb'
-  }
-})
+import * as AWS from 'aws-sdk'
+import {PostPayload} from './common/types'
+import { Context, APIGatewayProxyCallback, APIGatewayEvent } from 'aws-lambda';
+import {getProducts, updateOrInsertCartItem, getCartIdByUserId, getCartItemsByCartId, getProductsByProductId} from './db'
 
 AWS.config.update({ region: 'ap-southeast-2' })
 
-const getProducts = () => {
-  return knex('products')
-  .select()
-}
-
-const updateOrInsertCartItem = (payload: PostPayload) => {
-  return knex('cart_item')
-  .insert(payload)
-  .onConflict('product_id')
-  .merge({qty: knex.raw('?? + 1', 'qty')})
-}
-
-const getCartIdByUserId = (user_id) => {
-  return knex('cart')
-  .join('users', 'users.id', 'cart.user_id')
-  .where('user_id', user_id)
-  .select('cart.id')
-}
-
-const getCartItemsByCartId = (cart_id) => {
-  return knex('cart_item')
-  .select('*')
-  .where('cart_id', cart_id)
-}
-
-const getProductsByProductId = (product_id) => {
-  return knex('products')
-    .select()
-    .where('id', product_id)
-}
-
 // eslint-disable-next-line no-unused-vars
-export const handler = async (event: any, context: Context, callback: APIGatewayProxyCallback) => {
+export const handler = async (event: APIGatewayEvent, context: Context, callback: APIGatewayProxyCallback) => {
   console.log('Received event:', JSON.stringify(event, null, 2))
   let body;
   let payload;
@@ -96,8 +53,6 @@ export const handler = async (event: any, context: Context, callback: APIGateway
       default:
         throw new Error(`Unsupported route: "${event.httpMethod}"`)
     }
-
-    console.log(event.body)
     return {
       statusCode: 200,
       headers,
