@@ -47,9 +47,9 @@ resource "null_resource" "cleanup_files_after_upload" {
   provisioner "local-exec" {
     command = <<-EOT
     rm -rf ./shopping-app-download
-    rm -rf ./modules/resources/lambda-fn/node_modules
     rm -rf ./modules/resources/lambda-fn/package-lock.json
     rm -rf ./modules/resources/lambda-fn/dist/*
+    rm -rf ./modules/resources/lambda-fn/node_modules
     EOT
   }
 }
