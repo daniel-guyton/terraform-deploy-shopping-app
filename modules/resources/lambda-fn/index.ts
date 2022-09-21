@@ -3,7 +3,7 @@
 import * as AWS from 'aws-sdk'
 import {PostPayload} from './common/types'
 import { Context, APIGatewayProxyCallback, APIGatewayEvent } from 'aws-lambda';
-import {getProducts, updateOrInsertCartItem, getCartIdByUserId, getCartItemsByCartId, getProductsByProductId} from './db'
+import {getProducts, updateOrInsertCartItem, getCartIdByUserId, getCartItemsByCartId, getProductsByProductId} from './db-queries'
 
 AWS.config.update({ region: 'ap-southeast-2' })
 
