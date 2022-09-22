@@ -16,6 +16,21 @@ const knex = Knex({
 })
 
 
+const updateCartQuantity = (quantity: number, product_id: number) => {
+  console.log(quantity)
+  console.log(product_id)
+  return knex('cart_item')
+  .update('qty', quantity)
+  .where('product_id', product_id)
+}
+
+const deleteProductFromCart = (id: number) => {
+  console.log(id)
+  return knex('cart_item')
+  .where('product_id', id)
+  .del()
+}
+
 const getProducts = () => {
   return knex('products')
   .select()
@@ -47,4 +62,12 @@ const getProductsByProductId = (product_id) => {
     .where('id', product_id)
 }
 
-export {getProducts, updateOrInsertCartItem, getCartIdByUserId, getCartItemsByCartId, getProductsByProductId}
+export {
+  getProducts,
+  updateOrInsertCartItem,
+  getCartIdByUserId,
+  getCartItemsByCartId,
+  getProductsByProductId,
+  deleteProductFromCart,
+  updateCartQuantity
+}
