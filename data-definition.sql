@@ -15,6 +15,7 @@ CREATE TABLE `mydb`.`cart` (
 
 CREATE TABLE `mydb`.`products` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `img_src` TEXT,
   `name` VARCHAR(45) NULL,
   `desc` TEXT NULL,
   `price` INT NULL,

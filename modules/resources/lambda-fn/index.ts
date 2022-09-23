@@ -1,9 +1,8 @@
 /* eslint-disable camelcase */
 
 import * as AWS from 'aws-sdk'
-import {PostPayload} from './common/types'
 import { Context, APIGatewayProxyCallback, APIGatewayEvent } from 'aws-lambda';
-import {getProducts, updateOrInsertCartItem, getCartIdByUserId, getCartItemsByCartId, getProductsByProductId} from './db-queries'
+import {getProducts, updateOrInsertCartItem, getCartIdByUserId, getCartItemsByCartId, getProductsByProductId, deleteProductFromCart, updateCartQuantity} from './db-queries'
 
 AWS.config.update({ region: 'ap-southeast-2' })
 
@@ -14,7 +13,7 @@ export const handler = async (event: APIGatewayEvent, context: Context, callback
   let payload;
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, PUT, GET, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, PATCH, GET, OPTIONS, DELETE',
     'Access-Control-Allow-Headers': '*',
     'Cache-Control': 'max-age=0, no-store, must-revalidate',
     Pragma: 'no-cache',
@@ -29,13 +28,6 @@ export const handler = async (event: APIGatewayEvent, context: Context, callback
   }
   try {
     switch (true) {
-      case event.httpMethod == 'POST':
-        if(event.body !== null && event.body !== undefined) {
-          payload = JSON.parse(event.body)
-        }
-        await updateOrInsertCartItem({ cart_id: 1, product_id: payload.id, qty: 1 })
-        body = `Succesfully posting ${event.body}` // POST /product
-        break
       case event.httpMethod == 'GET' && event.path == '/getUserCart':
         const cartId = await getCartIdByUserId(2)
         const listOfCartItems = await getCartItemsByCartId(cartId[0].id)
@@ -44,11 +36,29 @@ export const handler = async (event: APIGatewayEvent, context: Context, callback
           qty: item.qty
         })))
         break
+      case event.httpMethod == 'PATCH':
+        const {qty, product} = JSON.parse(event.body)
+        await updateCartQuantity(qty, product)
+        body = `Sucessfully updated quantity to ${event.body}`
+        break
+      case event.httpMethod == 'DELETE':
+        // const {product_id} = event.pathParameters.proxy
+        await deleteProductFromCart(parseInt(event.pathParameters.proxy))
+        body = `Sucessfully delete product with id of ${event.pathParameters.proxy}`
+      break
+      case event.httpMethod == 'POST':
+        if(event.body !== null && event.body !== undefined) {
+          payload = JSON.parse(event.body)
+        }
+        await updateOrInsertCartItem({ cart_id: 1, product_id: payload.id, qty: 1 })
+        body = `Succesfully posting ${event.body}` // POST /product
+        break
+
       case event.httpMethod == 'GET':
         body = await getProducts()// GET product
         break
       case event.httpMethod == 'OPTIONS':
-        context.done(undefined, data)
+        await context.done(undefined, data)
         break
       default:
         throw new Error(`Unsupported route: "${event.httpMethod}"`)
