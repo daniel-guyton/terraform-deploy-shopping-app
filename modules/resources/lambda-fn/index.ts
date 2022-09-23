@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 
 import * as AWS from 'aws-sdk'
-import {PostPayload} from './common/types'
 import { Context, APIGatewayProxyCallback, APIGatewayEvent } from 'aws-lambda';
 import {getProducts, updateOrInsertCartItem, getCartIdByUserId, getCartItemsByCartId, getProductsByProductId, deleteProductFromCart, updateCartQuantity} from './db-queries'
 

@@ -17,7 +17,7 @@ const knex = Knex({
 
 
 const updateCartQuantity = (quantity: number, product_id: number) => {
-  console.log(quantity)
+  (quantity)
   console.log(product_id)
   return knex('cart_item')
   .update('qty', quantity)
