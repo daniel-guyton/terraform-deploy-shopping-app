@@ -26,7 +26,7 @@ resource "null_resource" "upload_shopping_app" {
     command = <<-EOT
     git clone https://github.com/daniel-guyton/angular-shopping-app.git ./shopping-app-download
     cd shopping-app-download
-    git checkout cart-service
+    git checkout dev
     npm i
     NG_APP_API_GW=${module.resources.base_url} ng build
     aws s3 sync ./dist/shopping-app s3://danielguyton.me
