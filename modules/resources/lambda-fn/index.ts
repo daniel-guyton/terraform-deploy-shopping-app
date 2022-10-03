@@ -35,11 +35,14 @@ export const handler = async (
     statusCode: 200,
     multiValueHeaders: {},
     isBase64Encoded: false,
-    headers,
+    ...headers,
     body: "",
   };
   try {
     switch (true) {
+      case event.httpMethod == "OPTIONS":
+        await callback(null, data);
+        break;
       case event.httpMethod == "GET" && event.path == "/getUserCart":
         const cartId = await getCartIdByUserId(2);
         const listOfCartItems = await getCartItemsByCartId(cartId[0].id);
@@ -53,7 +56,7 @@ export const handler = async (
           }))
         );
         break;
-      case event.httpMethod == "PATCH":
+      case event.httpMethod == "PUT":
         const { qty, product } = JSON.parse(event.body);
         await updateCartQuantity(qty, product);
         body = `Sucessfully updated quantity to ${event.body}`;
@@ -78,9 +81,7 @@ export const handler = async (
       case event.httpMethod == "GET":
         body = await getProducts(); // GET product
         break;
-      case event.httpMethod == "OPTIONS":
-        await callback(null, data);
-        break;
+
       default:
         throw new Error(`Unsupported route: "${event.httpMethod}"`);
     }
